@@ -1,22 +1,22 @@
 package com.stas.tsepa.sandboxapp;
 
 public class LectureItem {
-    private String name;
-    private int duration;
+    private String title;
+    private Integer duration;
 
-    public int getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
