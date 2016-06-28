@@ -21,7 +21,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lecturesAdapter = new LectureItemAdapter(this, R.layout.lectures_list_item);
+        lecturesAdapter = new LectureItemAdapter(this,
+                R.layout.lectures_list_item,
+                new ArrayList<LectureItem>());
         ListView listView = (ListView) findViewById(R.id.lectures_list_view);
         listView.setAdapter(lecturesAdapter);
     }
@@ -30,9 +32,9 @@ public class MainActivity extends AppCompatActivity {
 
         private ArrayList<LectureItem> objects;
 
-        public LectureItemAdapter(Context context, int resource) {
-            super(context, resource);
-            objects = new ArrayList<>();
+        public LectureItemAdapter(Context context, int resource, ArrayList<LectureItem> objects) {
+            super(context, resource, objects);
+            this.objects = objects;
         }
 
         @Override
