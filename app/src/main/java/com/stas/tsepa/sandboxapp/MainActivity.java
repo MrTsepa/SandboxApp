@@ -1,10 +1,14 @@
 package com.stas.tsepa.sandboxapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -23,17 +27,14 @@ public class MainActivity extends AppCompatActivity {
 
     private LectureItemAdapter lecturesAdapter;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lecturesAdapter = new LectureItemAdapter(this,
-                R.layout.lectures_list_item,
-                new ArrayList<LectureItem>());
-        ListView listView = (ListView) findViewById(R.id.lectures_list_view);
-        listView.setAdapter(lecturesAdapter);
-        updateLecturesList();
+        lecturesAdapter = new LectureItemAdapter(new ArrayList<LectureItem>());
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.lectures_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(lecturesAdapter);
     }
 
     @Override
@@ -60,7 +61,9 @@ public class MainActivity extends AppCompatActivity {
             LectoryiLecturesAPI lectoryiLecturesAPI = retrofit.create(LectoryiLecturesAPI.class);
             Response<List<LectureItem>> response;
             try {
+                Log.i(LOG_TAG, "Prepare to execute");
                 response = lectoryiLecturesAPI.loadItems().execute();
+                Log.i(LOG_TAG, "Executed");
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Unable to fetch data");
                 return new ArrayList<>();
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<LectureItem> lectureItems) {
             super.onPostExecute(lectureItems);
+            Log.i(LOG_TAG, Integer.toString(lectureItems.size()));
             lecturesAdapter.clear();
             for (LectureItem lectureItem : lectureItems) {
                 lecturesAdapter.add(lectureItem);
@@ -78,49 +82,59 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class LectureItemAdapter extends ArrayAdapter<LectureItem> {
+    private class LectureItemAdapter extends RecyclerView.Adapter<LectureItemAdapter.ViewHolder> {
 
-        private ArrayList<LectureItem> objects;
+        private List<LectureItem> objects;
 
-        public LectureItemAdapter(Context context, int resource, ArrayList<LectureItem> objects) {
-            super(context, resource, objects);
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public TextView titleTextView;
+            public TextView durationTextView;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                this.titleTextView = (TextView) itemView
+                        .findViewById(R.id.title_text_view);
+                this.durationTextView = (TextView) itemView
+                        .findViewById(R.id.duration_text_view);
+            }
+        }
+
+        public LectureItemAdapter(List<LectureItem> objects) {
             this.objects = objects;
         }
 
-        @Override
-        public void add(LectureItem object) {
-            objects.add(object);
+        public void add(LectureItem item) {
+            objects.add(item);
         }
 
-        @Override
         public void clear() {
-            super.clear();
             objects.clear();
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view;
-            if (convertView == null) {
-                view = getLayoutInflater().inflate(R.layout.lectures_list_item, null);
-            }
-            else {
-                view = convertView;
-            }
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.lectures_list_item, parent, false);
+            return new ViewHolder(itemView);
+        }
 
-            TextView titleTextView = (TextView) view.findViewById(R.id.title_text_view);
-            TextView durationTextView = (TextView) view.findViewById(R.id.duration_text_view);
-
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
             LectureItem lectureItem = objects.get(position);
             if (lectureItem != null) {
-                if (titleTextView != null) {
-                    titleTextView.setText(lectureItem.getTitle());
+                if (holder.titleTextView != null) {
+                    holder.titleTextView.setText(lectureItem.getTitle());
                 }
-                if (durationTextView != null) {
-                    durationTextView.setText(convertDurationToString(lectureItem.getDuration()));
+                if (holder.durationTextView != null) {
+                    holder.durationTextView.setText(convertDurationToString(lectureItem.getDuration()));
                 }
             }
-            return view;
+        }
+
+        @Override
+        public int getItemCount() {
+            Log.i("Adapter", Integer.toString(objects.size()));
+            return objects.size();
         }
 
         private String convertDurationToString(Integer duration) {
