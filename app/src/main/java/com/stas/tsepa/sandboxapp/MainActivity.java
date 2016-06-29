@@ -61,9 +61,7 @@ public class MainActivity extends AppCompatActivity {
             LectoryiLecturesAPI lectoryiLecturesAPI = retrofit.create(LectoryiLecturesAPI.class);
             Response<List<LectureItem>> response;
             try {
-                Log.i(LOG_TAG, "Prepare to execute");
                 response = lectoryiLecturesAPI.loadItems().execute();
-                Log.i(LOG_TAG, "Executed");
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Unable to fetch data");
                 return new ArrayList<>();
@@ -74,11 +72,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<LectureItem> lectureItems) {
             super.onPostExecute(lectureItems);
-            Log.i(LOG_TAG, Integer.toString(lectureItems.size()));
             lecturesAdapter.clear();
-            for (LectureItem lectureItem : lectureItems) {
-                lecturesAdapter.add(lectureItem);
-            }
+            lecturesAdapter.addAll(lectureItems);
         }
     }
 
@@ -105,10 +100,17 @@ public class MainActivity extends AppCompatActivity {
 
         public void add(LectureItem item) {
             objects.add(item);
+            notifyDataSetChanged();
+        }
+
+        public void addAll(List<LectureItem> items) {
+            objects.addAll(items);
+            notifyDataSetChanged();
         }
 
         public void clear() {
             objects.clear();
+            notifyDataSetChanged();
         }
 
         @Override
@@ -133,7 +135,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            Log.i("Adapter", Integer.toString(objects.size()));
             return objects.size();
         }
 
