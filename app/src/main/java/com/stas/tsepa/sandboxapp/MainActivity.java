@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
         public LectureItemAdapter(List<LectureItem> objects) {
             this.objects = objects;
+            notifyDataSetChanged();
         }
 
         public void add(LectureItem item) {
