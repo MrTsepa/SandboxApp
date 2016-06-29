@@ -14,9 +14,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
-import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -45,12 +43,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLecturesList() {
-        new FetchLecturesList().execute();
+        new FetchLecturesPageTask().execute();
     }
 
-    private class FetchLecturesList extends AsyncTask<Void, Void, List<LectureItem> > {
+    private class FetchLecturesPageTask extends AsyncTask<Void, Void, List<LectureItem> > {
 
-        private final String LOG_TAG = FetchLecturesList.class.getSimpleName();
+        private final String LOG_TAG = FetchLecturesPageTask.class.getSimpleName();
 
         @Override
         protected List<LectureItem> doInBackground(Void... voids) {
