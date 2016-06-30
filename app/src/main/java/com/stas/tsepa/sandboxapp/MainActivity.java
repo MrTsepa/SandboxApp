@@ -4,7 +4,6 @@ import android.app.LoaderManager;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
 import android.content.Loader;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -118,36 +117,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-/*    private class FetchLecturesPageTask extends AsyncTask<Void, Void, List<LectureItem> > {
-
-        private final String LOG_TAG = FetchLecturesPageTask.class.getSimpleName();
-
-        @Override
-        protected List<LectureItem> doInBackground(Void... voids) {
-            Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("http://lectoriy.mipt.ru/api/v1/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
-
-            LectoryiLecturesAPI lectoryiLecturesAPI = retrofit.create(LectoryiLecturesAPI.class);
-            Response<List<LectureItem>> response;
-            try {
-                response = lectoryiLecturesAPI.loadItems().execute();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Unable to fetch data");
-                return new ArrayList<>();
-            }
-            return response.body();
-        }
-
-        @Override
-        protected void onPostExecute(List<LectureItem> lectureItems) {
-            super.onPostExecute(lectureItems);
-            lecturesAdapter.clear();
-            lecturesAdapter.addAll(lectureItems);
-        }
-    }
-*/
     private class LectureItemAdapter extends RecyclerView.Adapter<LectureItemAdapter.ViewHolder> {
 
         private List<LectureItem> objects;
