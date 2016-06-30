@@ -25,13 +25,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private LectureItemAdapter lecturesAdapter;
+    private static LectureItemAdapter lecturesAdapter =
+            new LectureItemAdapter(new ArrayList<LectureItem>());
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lecturesAdapter = new LectureItemAdapter(new ArrayList<LectureItem>());
+        //lecturesAdapter = new LectureItemAdapter(new ArrayList<LectureItem>());
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.lectures_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(lecturesAdapter);
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class LectureItemAdapter extends RecyclerView.Adapter<LectureItemAdapter.ViewHolder> {
+    private static class LectureItemAdapter extends RecyclerView.Adapter<LectureItemAdapter.ViewHolder> {
 
         private List<LectureItem> objects;
 
