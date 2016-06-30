@@ -1,5 +1,9 @@
 package com.stas.tsepa.sandboxapp;
 
+import android.app.LoaderManager;
+import android.content.AsyncTaskLoader;
+import android.content.Context;
+import android.content.Loader;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,19 +25,22 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<List<LectureItem>> {
 
-    private static LectureItemAdapter lecturesAdapter =
-            new LectureItemAdapter(new ArrayList<LectureItem>());
+    private LectureItemAdapter lecturesAdapter;
+    private static final String LOG_TAG = "MY " + MainActivity.class.getSimpleName();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //lecturesAdapter = new LectureItemAdapter(new ArrayList<LectureItem>());
+        lecturesAdapter = new LectureItemAdapter(new ArrayList<LectureItem>());
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.lectures_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(lecturesAdapter);
+
+        getLoaderManager().initLoader(0, null, this);
         updateLecturesList();
     }
 
@@ -54,16 +61,64 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
     private void updateLecturesList() {
-        new FetchLecturesPageTask().execute();
+
     }
 
-    private class FetchLecturesPageTask extends AsyncTask<Void, Void, List<LectureItem> > {
+    @Override
+    public Loader<List<LectureItem>> onCreateLoader(int i, Bundle bundle) {
+        Log.d(LOG_TAG, "onCreateLoader");
+        return new LecturesListLoader(this);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<LectureItem>> loader, List<LectureItem> lectureItems) {
+        Log.d(LOG_TAG, "onLoadFinished");
+        lecturesAdapter.clear();
+        lecturesAdapter.addAll(lectureItems);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<LectureItem>> loader) {
+
+    }
+
+    private static class LecturesListLoader extends AsyncTaskLoader<List<LectureItem>> {
+        private static final String LOG_TAG = "MY " + LecturesListLoader.class.getSimpleName();
+
+        public LecturesListLoader(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onStartLoading() {
+            forceLoad();
+            super.onStartLoading();
+        }
+
+        @Override
+        public List<LectureItem> loadInBackground() {
+            Log.d(LOG_TAG, "loadInBackground");
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("http://lectoriy.mipt.ru/api/v1/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            LectoryiLecturesAPI lectoryiLecturesAPI = retrofit.create(LectoryiLecturesAPI.class);
+            Response<List<LectureItem>> response;
+            try {
+                Log.d(LOG_TAG, "Start fetching");
+                response = lectoryiLecturesAPI.loadItems().execute();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Unable to fetch data");
+                return new ArrayList<>();
+            }
+            Log.d(LOG_TAG, "Completed fetching");
+            return response.body();
+        }
+    }
+
+/*    private class FetchLecturesPageTask extends AsyncTask<Void, Void, List<LectureItem> > {
 
         private final String LOG_TAG = FetchLecturesPageTask.class.getSimpleName();
 
@@ -92,8 +147,8 @@ public class MainActivity extends AppCompatActivity {
             lecturesAdapter.addAll(lectureItems);
         }
     }
-
-    private static class LectureItemAdapter extends RecyclerView.Adapter<LectureItemAdapter.ViewHolder> {
+*/
+    private class LectureItemAdapter extends RecyclerView.Adapter<LectureItemAdapter.ViewHolder> {
 
         private List<LectureItem> objects;
 
