@@ -39,9 +39,16 @@ public class MainActivity extends AppCompatActivity
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.lectures_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(lecturesAdapter);
+        recyclerView.addOnScrollListener(new EndlessScrollListener(recyclerView.getLayoutManager()) {
+            private final String LOG_TAG = "MY " + EndlessScrollListener.class.getSimpleName();
+            @Override
+            public void onLoadMore(int page) {
+                Log.d(LOG_TAG, "onLoadMore");
+
+            }
+        });
 
         getLoaderManager().initLoader(LOADER_ID, null, this);
-        updateLecturesList();
     }
 
     @Override
