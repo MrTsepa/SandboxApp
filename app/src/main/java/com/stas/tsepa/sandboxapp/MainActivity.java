@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity
 
     private LectureItemAdapter lecturesAdapter;
     private static final String LOG_TAG = "MY " + MainActivity.class.getSimpleName();
+    private static final int LOADER_ID = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(lecturesAdapter);
 
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(LOADER_ID, null, this);
         updateLecturesList();
     }
 
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateLecturesList() {
-
+        getLoaderManager().getLoader(LOADER_ID).forceLoad();
     }
 
     @Override
