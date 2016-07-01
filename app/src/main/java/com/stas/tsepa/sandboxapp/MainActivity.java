@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity
             private final String LOG_TAG = "MY " + EndlessScrollListener.class.getSimpleName();
             @Override
             public void onLoadMore(int page) {
-                Log.d(LOG_TAG, "onLoadMore");
+                Log.d(LOG_TAG, "onLoadMore"); //TODO Дублируется при повороте активити
 
             }
         });
