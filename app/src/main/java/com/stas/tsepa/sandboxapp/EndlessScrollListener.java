@@ -7,7 +7,6 @@ import android.util.Log;
 public abstract class EndlessScrollListener extends RecyclerView.OnScrollListener {
     private final String LOG_TAG = "MY " + EndlessScrollListener.class.getSimpleName();
 
-    private int currentPage = 0;
     private int totalItemCount = 0;
     private boolean loading = true;
 
@@ -30,7 +29,6 @@ public abstract class EndlessScrollListener extends RecyclerView.OnScrollListene
         lastVisibleItemPosition = linearLayoutManager.findLastVisibleItemPosition();
 
         if (totalItemCount < this.totalItemCount) {
-            this.currentPage = 0;
             this.totalItemCount = totalItemCount;
             if (totalItemCount == 0) {
                 this.loading = true;
@@ -43,13 +41,12 @@ public abstract class EndlessScrollListener extends RecyclerView.OnScrollListene
         }
 
         if (!loading && lastVisibleItemPosition + 1 >= totalItemCount) {
-            currentPage++;
-            onLoadMore(currentPage);
+            onLoadMore(totalItemCount);
             loading = true;
         }
 //        Log.d(LOG_TAG, "onScrolled, lastVisibleItem " + Integer.toString(lastVisibleItemPosition)
 //                + ", totalItemCount " + Integer.toString(this.totalItemCount));
     }
 
-    public abstract void onLoadMore(int page);
+    public abstract void onLoadMore(int totalItemCount);
 }

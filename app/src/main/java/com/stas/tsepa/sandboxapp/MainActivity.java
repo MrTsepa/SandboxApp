@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +18,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +34,9 @@ public class MainActivity extends AppCompatActivity
     private static final String LOG_TAG = "MY " + MainActivity.class.getSimpleName();
     private static final int LOADER_ID = 0;
 
+    private static final int ITEMS_PER_PAGE = 20;
+
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -42,12 +48,16 @@ public class MainActivity extends AppCompatActivity
         recyclerView.addOnScrollListener(new EndlessScrollListener(recyclerView.getLayoutManager()) {
             private final String LOG_TAG = "MY " + EndlessScrollListener.class.getSimpleName();
             @Override
-            public void onLoadMore(int page) {
-                Log.d(LOG_TAG, "onLoadMore"); //TODO Дублируется при повороте активити
-
+            public void onLoadMore(int totalItemsCount) {
+                int page = totalItemsCount/ITEMS_PER_PAGE + 1;
+                Log.d(LOG_TAG, "onLoadMore page " + Integer.toString(page)); //TODO Дублируется при повороте активити
+                Bundle bundle = new Bundle();
+                bundle.putInt("page", page);
+                List<LectureItem> loadedData = new ArrayList<LectureItem>(lecturesAdapter.objects);
+                bundle.putSerializable("loadedData", (Serializable) loadedData);
+                getLoaderManager().restartLoader(LOADER_ID, bundle, MainActivity.this);
             }
         });
-
         getLoaderManager().initLoader(LOADER_ID, null, this);
     }
 
@@ -75,12 +85,19 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Loader<List<LectureItem>> onCreateLoader(int i, Bundle bundle) {
         Log.d(LOG_TAG, "onCreateLoader");
-        return new LecturesListLoader(this);
+        if (bundle == null) {
+            return new LecturesListLoader(this, 1, new ArrayList<LectureItem>());
+        }
+        else {
+            List<LectureItem> loadedData = (List<LectureItem>) bundle.getSerializable("loadedData");
+            Log.d(LOG_TAG, "loadedData size " + Integer.toString(loadedData.size()));
+            return new LecturesListLoader(this, bundle.getInt("page", 1), loadedData);
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<List<LectureItem>> loader, List<LectureItem> lectureItems) {
-        Log.d(LOG_TAG, "onLoadFinished");
+        Log.d(LOG_TAG, "onLoadFinished items size " + Integer.toString(lectureItems.size()));
         lecturesAdapter.clear();
         lecturesAdapter.addAll(lectureItems);
     }
@@ -92,14 +109,25 @@ public class MainActivity extends AppCompatActivity
 
     private static class LecturesListLoader extends AsyncTaskLoader<List<LectureItem>> {
         private static final String LOG_TAG = "MY " + LecturesListLoader.class.getSimpleName();
+        private int page;
+        private int pageCount = 0;
 
-        public LecturesListLoader(Context context) {
+        private List<LectureItem> mData;
+
+        public LecturesListLoader(Context context, int page, List<LectureItem> mData) {
             super(context);
+            this.page = page;
+            this.mData = mData;
         }
 
         @Override
         protected void onStartLoading() {
-            forceLoad();
+            if (page > pageCount) {
+                forceLoad();
+            }
+            else {
+                deliverResult(mData);
+            }
             super.onStartLoading();
         }
 
@@ -115,17 +143,21 @@ public class MainActivity extends AppCompatActivity
             Response<List<LectureItem>> response;
             try {
                 Log.d(LOG_TAG, "Start fetching");
-                response = lectoryiLecturesAPI.loadItems().execute();
+                response = lectoryiLecturesAPI.loadItems(page).execute();
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Unable to fetch data");
                 return new ArrayList<>();
             }
             Log.d(LOG_TAG, "Completed fetching");
-            return response.body();
+            pageCount = page;
+            mData.addAll(response.body());
+            Log.d(LOG_TAG, "new loadedData size " + Integer.toString(mData.size()));
+            return mData;
         }
     }
 
     private class LectureItemAdapter extends RecyclerView.Adapter<LectureItemAdapter.ViewHolder> {
+        private final String LOG_TAG = "MY " + LectureItemAdapter.class.getSimpleName();
 
         private List<LectureItem> objects;
 
@@ -148,6 +180,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         public void addAll(List<LectureItem> items) {
+            Log.d(LOG_TAG, "addAll items size " + Integer.toString(items.size()));
             objects.addAll(items);
             notifyDataSetChanged();
         }

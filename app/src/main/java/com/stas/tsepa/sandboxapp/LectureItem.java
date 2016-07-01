@@ -1,6 +1,8 @@
 package com.stas.tsepa.sandboxapp;
 
-public class LectureItem {
+import java.io.Serializable;
+
+public class LectureItem implements Serializable{
     private String title;
     private Integer duration;
 
