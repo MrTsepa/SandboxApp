@@ -12,13 +12,14 @@ import com.stas.tsepa.sandboxapp.LectureItem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LectureSQLiteDB implements Repository<LectureItem> {
+public class LectureSQLiteDB implements Repository<LectureItem, String> {
 
     private static final String DB_NAME = "lectoryi";
     private static final int DB_VERSION = 1;
     private static final String DB_TABLE = "lecture";
 
     public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_GUID = "guid";
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_DURATION = "duration";
     public static final String COLUMN_COURSE_GUID = "course";
@@ -26,6 +27,7 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
     private static final String DB_CREATE =
             "create table " + DB_TABLE + "(" +
                         COLUMN_ID + " integer primary key autoincrement, " +
+                        COLUMN_GUID + "integer, " +
                         COLUMN_TITLE + " text, " +
                         COLUMN_DURATION + " integer, " +
                         COLUMN_COURSE_GUID + " text" +
@@ -86,6 +88,11 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
     }
 
     @Override
+    public LectureItem get(String guid) {
+        return null;
+    }
+
+    @Override
     public int getCount() {
         Cursor cursor = mDB.query(DB_TABLE, null, null, null, null, null, null);
         int count = cursor.getCount();
@@ -107,17 +114,20 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
         String courseGuid = cursor.getString(cursor.getColumnIndex(COLUMN_COURSE_GUID));
         if (courseGuid == null) {
             return new LectureItem(
+                    cursor.getString(cursor.getColumnIndex(COLUMN_GUID)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
                     cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION))
             );
         }
         if (courseGuid.equals("")) {
             return new LectureItem(
+                    cursor.getString(cursor.getColumnIndex(COLUMN_GUID)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
                     cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION))
             );
         } else {
             return new LectureItem(
+                    cursor.getString(cursor.getColumnIndex(COLUMN_GUID)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
                     cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION)),
                     new CourseItem(courseGuid));
@@ -128,6 +138,7 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
         if (item == null)
             return null;
         ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_GUID, item.getGuid());
         contentValues.put(COLUMN_TITLE, item.getTitle());
         contentValues.put(COLUMN_DURATION, item.getDuration());
         CourseItem courseItem = item.getCourse();

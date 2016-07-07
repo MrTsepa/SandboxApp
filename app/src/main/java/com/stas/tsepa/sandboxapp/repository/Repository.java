@@ -2,10 +2,11 @@ package com.stas.tsepa.sandboxapp.repository;
 
 import java.util.List;
 
-public interface Repository<Item> {
+public interface Repository<Item, Id> {
     void close();
     void addAll(List<Item> items);
     List<Item> getAll();
+    Item get(Id id);
     int getCount();
     void clear();
 

@@ -6,21 +6,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LectureItem {
+    private String guid;
     private String title;
     private Integer duration;
     private List<CourseItem> courses;
 
-    public LectureItem(String title, Integer duration, CourseItem course) {
+    public LectureItem(String guid, String title, Integer duration, CourseItem course) {
+        this.guid = guid;
         this.courses = new ArrayList<>();
         this.courses.add(course);
         this.duration = duration;
         this.title = title;
     }
 
-    public LectureItem(String title, Integer duration) {
+    public LectureItem(String guid, String title, Integer duration) {
+        this.guid = guid;
         this.title = title;
         this.duration = duration;
         this.courses = new ArrayList<>();
+    }
+
+    public String getGuid() {
+        return guid;
     }
 
     public Integer getDuration() {
