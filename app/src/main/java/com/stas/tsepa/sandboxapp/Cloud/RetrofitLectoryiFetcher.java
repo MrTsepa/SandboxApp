@@ -6,6 +6,7 @@ import com.stas.tsepa.sandboxapp.LectureItem;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -30,6 +31,9 @@ public class RetrofitLectoryiFetcher {
         LectoryiLecturesAPI lectoryiLecturesAPI = retrofit.create(LectoryiLecturesAPI.class);
         Response<List<LectureItem>> response;
         try {
+            Random random = new Random();
+            if (random.nextInt(5) == 0)
+                throw new IOException();
             response = lectoryiLecturesAPI.loadItems(page, PER_PAGE).execute();
         } catch (IOException e) {
             Log.e(LOG_TAG, "Unable to fetch data");
