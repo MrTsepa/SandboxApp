@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.stas.tsepa.sandboxapp.CourseItem;
 import com.stas.tsepa.sandboxapp.cloud.FetchTaskLoader;
 import com.stas.tsepa.sandboxapp.LectureItem;
 import com.stas.tsepa.sandboxapp.R;
@@ -67,6 +68,21 @@ public class MainActivity extends AppCompatActivity
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.lectures_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new LectureItemAdapter();
+        mAdapter.setOnItemClickListener(new LectureItemAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                LectureItem lectureItem = mAdapter.getItemAt(position);
+                if (lectureItem == null)
+                    return;
+                CourseItem courseItem = lectureItem.getCourse();
+                if (courseItem == null) {
+                    Toast.makeText(MainActivity.this, "No course", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(MainActivity.this, courseItem.getGuid(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         recyclerView.setAdapter(mAdapter);
 
         mLectureRepository = new LectureSQLiteDB(this, this);
@@ -91,7 +107,8 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.action_refresh :
                 mLectureRepository.clear();
-                getSupportLoaderManager().getLoader(ID_FETCH_LOADER).abandon();
+                if (getSupportLoaderManager().getLoader(ID_FETCH_LOADER) != null)
+                    getSupportLoaderManager().getLoader(ID_FETCH_LOADER).abandon();
                 getSupportLoaderManager().restartLoader(ID_FETCH_LOADER, null,
                         new FetchTaskLoader(this, mLectureRepository, mFetchingErrorHandler));
                 return true;

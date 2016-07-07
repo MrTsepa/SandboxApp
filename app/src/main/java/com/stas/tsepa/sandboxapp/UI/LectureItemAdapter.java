@@ -17,7 +17,9 @@ class LectureItemAdapter
 
     private List<LectureItem> objects;
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    private OnItemClickListener onItemClickListener = null;
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView titleTextView;
         public TextView durationTextView;
 
@@ -27,7 +29,19 @@ class LectureItemAdapter
                     .findViewById(R.id.title_text_view);
             this.durationTextView = (TextView) itemView
                     .findViewById(R.id.duration_text_view);
+            itemView.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(v, getAdapterPosition());
+            }
+        }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position);
     }
 
     public LectureItemAdapter(List<LectureItem> objects) {
@@ -75,6 +89,19 @@ class LectureItemAdapter
     @Override
     public int getItemCount() {
         return objects.size();
+    }
+
+    public LectureItem getItemAt(int position) {
+        if (position >= objects.size() || position < 0) {
+            return null;
+        }
+        else {
+            return objects.get(position);
+        }
+    }
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
     }
 
     private String convertDurationToString(Integer duration) {
