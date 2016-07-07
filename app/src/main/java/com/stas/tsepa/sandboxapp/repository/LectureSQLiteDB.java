@@ -22,12 +22,12 @@ public class LectureSQLiteDB implements Repository<LectureItem, String> {
     public static final String COLUMN_GUID = "guid";
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_DURATION = "duration";
-    public static final String COLUMN_COURSE_GUID = "course";
+    public static final String COLUMN_COURSE_GUID = "course_guid";
 
     private static final String DB_CREATE =
             "create table " + DB_TABLE + "(" +
                         COLUMN_ID + " integer primary key autoincrement, " +
-                        COLUMN_GUID + "integer, " +
+                        COLUMN_GUID + " text, " +
                         COLUMN_TITLE + " text, " +
                         COLUMN_DURATION + " integer, " +
                         COLUMN_COURSE_GUID + " text" +

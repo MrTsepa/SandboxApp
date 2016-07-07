@@ -19,10 +19,10 @@ public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.Lo
 
     private static final String LOG_TAG = "MY " + FetchTaskLoader.class.getSimpleName();
 
-    private Repository<LectureItem> mRepository;
+    private Repository<LectureItem, String> mRepository;
     private Handler mHandler;
 
-    public FetchTaskLoader(Context context, Repository<LectureItem> mRepository, Handler mHandler) {
+    public FetchTaskLoader(Context context, Repository<LectureItem, String> mRepository, Handler mHandler) {
         super(context);
         this.mRepository = mRepository;
         this.mHandler = mHandler;

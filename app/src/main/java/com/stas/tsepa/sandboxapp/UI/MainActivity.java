@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity
     private static final int ID_FETCH_LOADER = 2;
 
     private LectureItemAdapter mAdapter;
-    private Repository<LectureItem> mLectureRepository;
+    private Repository<LectureItem, String> mLectureRepository;
 
     private Handler mFetchingErrorHandler = new Handler(Looper.getMainLooper()) {
 
@@ -165,9 +165,9 @@ public class MainActivity extends AppCompatActivity
 
         private static final String LOG_TAG = "MY " + RepositoryLoader.class.getSimpleName();
 
-        private Repository<LectureItem> mRepository;
+        private Repository<LectureItem, String> mRepository;
 
-        public RepositoryLoader(Context context, Repository<LectureItem> mRepository) {
+        public RepositoryLoader(Context context, Repository<LectureItem, String> mRepository) {
             super(context);
             this.mRepository = mRepository;
         }
