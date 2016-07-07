@@ -1,5 +1,7 @@
 package com.stas.tsepa.sandboxapp;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,12 @@ public class LectureItem {
         this.courses.add(course);
         this.duration = duration;
         this.title = title;
+    }
+
+    public LectureItem(String title, Integer duration) {
+        this.title = title;
+        this.duration = duration;
+        this.courses = new ArrayList<>();
     }
 
     public Integer getDuration() {

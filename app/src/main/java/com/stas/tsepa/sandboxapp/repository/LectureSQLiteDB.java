@@ -104,10 +104,24 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
             return null;
         if (cursor.isBeforeFirst() || cursor.isAfterLast())
             return null;
-        return new LectureItem(
-            cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
-            cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION)), 
-            new CourseItem(cursor.getString(cursor.getColumnIndex(COLUMN_COURSE_GUID))));
+        String courseGuid = cursor.getString(cursor.getColumnIndex(COLUMN_COURSE_GUID));
+        if (courseGuid == null) {
+            return new LectureItem(
+                    cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION))
+            );
+        }
+        if (courseGuid.equals("")) {
+            return new LectureItem(
+                    cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION))
+            );
+        } else {
+            return new LectureItem(
+                    cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION)),
+                    new CourseItem(courseGuid));
+        }
     }
 
     private ContentValues getContentValues(LectureItem item) {
