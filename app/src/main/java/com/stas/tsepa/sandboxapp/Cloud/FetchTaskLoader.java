@@ -35,16 +35,10 @@ public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.Lo
     }
 
     @Override
-    protected void onStopLoading() {
-        super.onStopLoading();
-        Log.d(LOG_TAG, "onStopLoading");
-    }
-
-    @Override
     public Object loadInBackground() {
         Log.d(LOG_TAG, "loadInBackground");
 
-        int pageCount = 0;
+        int pageCount;
         try {
             pageCount = RetrofitLectoryiFetcher.getPageCount();
         } catch (IOException e) {
@@ -55,6 +49,8 @@ public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.Lo
         Log.d(LOG_TAG, "page count " + Integer.toString(pageCount));
 
         int pageLoaded = mRepository.getCount() / RetrofitLectoryiFetcher.PER_PAGE;
+
+        Log.d(LOG_TAG, "page loaded " + Integer.toString(pageLoaded));
 
         for (int page = pageLoaded + 1; page <= pageCount; page++) {
             if (isAbandoned()) {
