@@ -1,6 +1,7 @@
 package com.stas.tsepa.sandboxapp.ui;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -21,6 +22,8 @@ import com.stas.tsepa.sandboxapp.CourseItem;
 import com.stas.tsepa.sandboxapp.cloud.FetchTaskLoader;
 import com.stas.tsepa.sandboxapp.LectureItem;
 import com.stas.tsepa.sandboxapp.R;
+import com.stas.tsepa.sandboxapp.repository.CloudCourseLectureCountGetter;
+import com.stas.tsepa.sandboxapp.repository.CourseLectureCountGetter;
 import com.stas.tsepa.sandboxapp.repository.Repository;
 import com.stas.tsepa.sandboxapp.repository.LectureSQLiteDB;
 
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final int ID_REPOSITORY_LOADER = 1;
     private static final int ID_FETCH_LOADER = 2;
+    private static final int ID_LECTURE_COUNT_LOADER = 3;
 
     private LectureItemAdapter mAdapter;
     private Repository<LectureItem, String> mLectureRepository;
@@ -68,21 +72,7 @@ public class MainActivity extends AppCompatActivity
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.lectures_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new LectureItemAdapter();
-        mAdapter.setOnItemClickListener(new LectureItemAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                LectureItem lectureItem = mAdapter.getItemAt(position);
-                if (lectureItem == null)
-                    return;
-                CourseItem courseItem = lectureItem.getCourse();
-                if (courseItem == null) {
-                    Toast.makeText(MainActivity.this, "No course", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    Toast.makeText(MainActivity.this, courseItem.getGuid(), Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        mAdapter.setOnItemClickListener(new MyOnItemClickListener());
         recyclerView.setAdapter(mAdapter);
 
         mLectureRepository = new LectureSQLiteDB(this, this);
@@ -184,4 +174,47 @@ public class MainActivity extends AppCompatActivity
             return mRepository.getAll();
         }
     }
+
+    private class MyOnItemClickListener implements LectureItemAdapter.OnItemClickListener {
+        @Override
+        public void onItemClick(View view, int position) {
+            LectureItem lectureItem = mAdapter.getItemAt(position);
+            if (lectureItem == null)
+                return;
+            CourseItem courseItem = lectureItem.getCourse();
+            if (courseItem == null) {
+                Toast.makeText(MainActivity.this, "No course", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                new GetLectureCountTask(lectureItem).execute();
+            }
+        }
+
+        private class GetLectureCountTask extends AsyncTask<Void, Void, Integer> {
+
+            private LectureItem lectureItem;
+
+            GetLectureCountTask(LectureItem lectureItem) {
+                this.lectureItem = lectureItem;
+            }
+
+            @Override
+            protected Integer doInBackground(Void... params) {
+                String guid = lectureItem.getCourse().getGuid();
+                CourseLectureCountGetter countGetter =
+                        new CloudCourseLectureCountGetter();
+                return countGetter.get(guid);
+            }
+
+            @Override
+            protected void onPostExecute(Integer integer) {
+                super.onPostExecute(integer);
+                Toast.makeText(MainActivity.this,
+                        lectureItem.getOrder() + " of " + Integer.toString(integer),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    }
+
 }

@@ -23,6 +23,7 @@ public class LectureSQLiteDB implements Repository<LectureItem, String> {
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_DURATION = "duration";
     public static final String COLUMN_COURSE_GUID = "course_guid";
+    public static final String COLUMN_ORDER = "order_text";
 
     private static final String DB_CREATE =
             "create table " + DB_TABLE + "(" +
@@ -30,7 +31,8 @@ public class LectureSQLiteDB implements Repository<LectureItem, String> {
                         COLUMN_GUID + " text, " +
                         COLUMN_TITLE + " text, " +
                         COLUMN_DURATION + " integer, " +
-                        COLUMN_COURSE_GUID + " text" +
+                        COLUMN_COURSE_GUID + " text, " +
+                        COLUMN_ORDER + " text" +
                     ");";
 
     private final Context mContext;
@@ -50,7 +52,6 @@ public class LectureSQLiteDB implements Repository<LectureItem, String> {
         mDB = mDBHelper.getWritableDatabase();
     }
 
-    @Override
     public void close() {
         if (mDBHelper != null) {
             mDBHelper.close();
@@ -130,7 +131,8 @@ public class LectureSQLiteDB implements Repository<LectureItem, String> {
                     cursor.getString(cursor.getColumnIndex(COLUMN_GUID)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
                     cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION)),
-                    new CourseItem(courseGuid));
+                    new CourseItem(courseGuid),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_ORDER)));
         }
     }
 
@@ -145,6 +147,7 @@ public class LectureSQLiteDB implements Repository<LectureItem, String> {
         if (courseItem != null) {
             contentValues.put(COLUMN_COURSE_GUID, courseItem.getGuid());
         }
+        contentValues.put(COLUMN_ORDER, item.getOrder());
         return contentValues;
     }
 
