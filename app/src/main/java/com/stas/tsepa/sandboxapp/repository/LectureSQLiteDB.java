@@ -11,7 +11,7 @@ import com.stas.tsepa.sandboxapp.LectureItem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LectureItemSQLiteDB implements LectureItemRepository {
+public class LectureSQLiteDB implements Repository<LectureItem> {
 
     private static final String DB_NAME = "lectoryi";
     private static final int DB_VERSION = 1;
@@ -29,12 +29,12 @@ public class LectureItemSQLiteDB implements LectureItemRepository {
                     ");";
 
     private final Context mContext;
-    private final Callback mCallback;
+    private final Callback<LectureItem> mCallback;
 
     private DBHelper mDBHelper;
     private SQLiteDatabase mDB;
 
-    public LectureItemSQLiteDB(Context mContext, Callback mCallback) {
+    public LectureSQLiteDB(Context mContext, Callback<LectureItem> mCallback) {
         this.mContext = mContext;
         this.mCallback = mCallback;
         open();
