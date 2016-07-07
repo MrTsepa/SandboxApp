@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.stas.tsepa.sandboxapp.CourseItem;
 import com.stas.tsepa.sandboxapp.LectureItem;
 
 import java.util.ArrayList;
@@ -20,12 +21,14 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_TITLE = "title";
     public static final String COLUMN_DURATION = "duration";
+    public static final String COLUMN_COURSE_GUID = "course";
 
     private static final String DB_CREATE =
             "create table " + DB_TABLE + "(" +
                         COLUMN_ID + " integer primary key autoincrement, " +
                         COLUMN_TITLE + " text, " +
-                        COLUMN_DURATION + " integer" +
+                        COLUMN_DURATION + " integer, " +
+                        COLUMN_COURSE_GUID + " text" +
                     ");";
 
     private final Context mContext;
@@ -101,10 +104,10 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
             return null;
         if (cursor.isBeforeFirst() || cursor.isAfterLast())
             return null;
-        LectureItem item = new LectureItem();
-        item.setTitle(cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)));
-        item.setDuration(cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION)));
-        return item;
+        return new LectureItem(
+            cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+            cursor.getInt(cursor.getColumnIndex(COLUMN_DURATION)), 
+            new CourseItem(cursor.getString(cursor.getColumnIndex(COLUMN_COURSE_GUID))));
     }
 
     private ContentValues getContentValues(LectureItem item) {
@@ -113,6 +116,10 @@ public class LectureSQLiteDB implements Repository<LectureItem> {
         ContentValues contentValues = new ContentValues();
         contentValues.put(COLUMN_TITLE, item.getTitle());
         contentValues.put(COLUMN_DURATION, item.getDuration());
+        CourseItem courseItem = item.getCourse();
+        if (courseItem != null) {
+            contentValues.put(COLUMN_COURSE_GUID, courseItem.getGuid());
+        }
         return contentValues;
     }
 

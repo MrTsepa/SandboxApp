@@ -14,20 +14,22 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.stas.tsepa.sandboxapp.cloud.FetchTaskLoader;
 import com.stas.tsepa.sandboxapp.LectureItem;
 import com.stas.tsepa.sandboxapp.R;
-import com.stas.tsepa.sandboxapp.repository.LectureItemRepository;
-import com.stas.tsepa.sandboxapp.repository.LectureItemSQLiteDB;
+import com.stas.tsepa.sandboxapp.repository.Repository;
+import com.stas.tsepa.sandboxapp.repository.LectureSQLiteDB;
 
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity
-        implements LectureItemSQLiteDB.Callback, LoaderManager.LoaderCallbacks<List<LectureItem>> {
+        implements LectureSQLiteDB.Callback<LectureItem>,
+        LoaderManager.LoaderCallbacks<List<LectureItem>> {
 
     private static final String LOG_TAG = "MY " + MainActivity.class.getSimpleName();
 
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity
     private static final int ID_FETCH_LOADER = 2;
 
     private LectureItemAdapter mAdapter;
-    private LectureItemRepository mRepository;
+    private Repository<LectureItem> mLectureRepository;
 
     private Handler mFetchingErrorHandler = new Handler(Looper.getMainLooper()) {
 
@@ -51,7 +53,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void run() {
                     MainActivity.this.getSupportLoaderManager().initLoader(ID_FETCH_LOADER, null,
-                            new FetchTaskLoader(MainActivity.this, MainActivity.this.mRepository,
+                            new FetchTaskLoader(MainActivity.this, MainActivity.this.mLectureRepository,
                                     mFetchingErrorHandler));
                 }
             }, RETRYING_TIME_SECS * 1000);
@@ -67,11 +69,11 @@ public class MainActivity extends AppCompatActivity
         mAdapter = new LectureItemAdapter();
         recyclerView.setAdapter(mAdapter);
 
-        mRepository = new LectureItemSQLiteDB(this, this);
+        mLectureRepository = new LectureSQLiteDB(this, this);
 
         getSupportLoaderManager().initLoader(ID_REPOSITORY_LOADER, null, this);
         getSupportLoaderManager().initLoader(ID_FETCH_LOADER, null,
-                new FetchTaskLoader(this, mRepository, mFetchingErrorHandler));
+                new FetchTaskLoader(this, mLectureRepository, mFetchingErrorHandler));
 
         if (savedInstanceState != null)
             recyclerView.setVerticalScrollbarPosition(savedInstanceState
@@ -88,10 +90,10 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh :
-                mRepository.clear();
+                mLectureRepository.clear();
                 getSupportLoaderManager().getLoader(ID_FETCH_LOADER).abandon();
                 getSupportLoaderManager().restartLoader(ID_FETCH_LOADER, null,
-                        new FetchTaskLoader(this, mRepository, mFetchingErrorHandler));
+                        new FetchTaskLoader(this, mLectureRepository, mFetchingErrorHandler));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -112,7 +114,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDataAppended(List<LectureItem> lectureItems) {
+    public void onDataAppended(List<LectureItem> items) {
 //        Log.d(LOG_TAG, "onDataAppended");
         getSupportLoaderManager().getLoader(ID_REPOSITORY_LOADER).onContentChanged();
     }
@@ -126,7 +128,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Loader<List<LectureItem>> onCreateLoader(int id, Bundle args) {
         Log.d(LOG_TAG, "onCreateLoader");
-        return new RepositoryLoader(this, mRepository);
+        return new RepositoryLoader(this, mLectureRepository);
     }
 
     @Override
@@ -146,9 +148,9 @@ public class MainActivity extends AppCompatActivity
 
         private static final String LOG_TAG = "MY " + RepositoryLoader.class.getSimpleName();
 
-        private LectureItemRepository mRepository;
+        private Repository<LectureItem> mRepository;
 
-        public RepositoryLoader(Context context, LectureItemRepository mRepository) {
+        public RepositoryLoader(Context context, Repository<LectureItem> mRepository) {
             super(context);
             this.mRepository = mRepository;
         }

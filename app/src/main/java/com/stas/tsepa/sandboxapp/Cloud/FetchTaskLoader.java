@@ -10,7 +10,7 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 
 import com.stas.tsepa.sandboxapp.LectureItem;
-import com.stas.tsepa.sandboxapp.repository.LectureItemRepository;
+import com.stas.tsepa.sandboxapp.repository.Repository;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,10 +19,10 @@ public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.Lo
 
     private static final String LOG_TAG = "MY " + FetchTaskLoader.class.getSimpleName();
 
-    private LectureItemRepository mRepository;
+    private Repository<LectureItem> mRepository;
     private Handler mHandler;
 
-    public FetchTaskLoader(Context context, LectureItemRepository mRepository, Handler mHandler) {
+    public FetchTaskLoader(Context context, Repository<LectureItem> mRepository, Handler mHandler) {
         super(context);
         this.mRepository = mRepository;
         this.mHandler = mHandler;
@@ -59,8 +59,6 @@ public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.Lo
             List<LectureItem> items;
             try {
                 items = RetrofitLectoryiFetcher.fetch(page);
-                if (page == 3)
-                    throw new IOException();
             } catch (IOException e) {
                 Message message = mHandler.obtainMessage();
                 message.sendToTarget();
@@ -68,7 +66,7 @@ public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.Lo
             }
             mRepository.addAll(items);
             try {
-                Thread.sleep(10 * 1000);
+                Thread.sleep(5 * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
