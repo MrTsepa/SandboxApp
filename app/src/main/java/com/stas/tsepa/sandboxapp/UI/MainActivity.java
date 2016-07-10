@@ -31,6 +31,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity
         implements LectureSQLiteDB.Callback<LectureItem>,
         LoaderManager.LoaderCallbacks<List<LectureItem>> {
@@ -39,7 +45,6 @@ public class MainActivity extends AppCompatActivity
 
     private static final int ID_REPOSITORY_LOADER = 1;
     private static final int ID_FETCH_LOADER = 2;
-    private static final int ID_LECTURE_COUNT_LOADER = 3;
 
     private LectureItemAdapter mAdapter;
     private Repository<LectureItem, String> mLectureRepository;
@@ -178,43 +183,35 @@ public class MainActivity extends AppCompatActivity
     private class MyOnItemClickListener implements LectureItemAdapter.OnItemClickListener {
         @Override
         public void onItemClick(View view, int position) {
-            LectureItem lectureItem = mAdapter.getItemAt(position);
+            final LectureItem lectureItem = mAdapter.getItemAt(position);
             if (lectureItem == null)
                 return;
-            CourseItem courseItem = lectureItem.getCourse();
+            final CourseItem courseItem = lectureItem.getCourse();
             if (courseItem == null) {
                 Toast.makeText(MainActivity.this, "No course", Toast.LENGTH_SHORT).show();
             }
             else {
-                new GetLectureCountTask(lectureItem).execute();
+                Observable.create(new Observable.OnSubscribe<Integer>() {
+                    @Override
+                    public void call(Subscriber<? super Integer> subscriber) {
+                        CourseLectureCountGetter countGetter =
+                                new CloudCourseLectureCountGetter();
+                        subscriber.onNext(countGetter.get(courseItem.getGuid()));
+                        subscriber.onCompleted();
+                    }
+                })
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .observeOn(Schedulers.io())
+                        .subscribe(new Action1<Integer>() {
+                    @Override
+                    public void call(Integer integer) {
+                        Toast.makeText(MainActivity.this,
+                                lectureItem.getOrder() + " of " + Integer.toString(integer),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         }
-
-        private class GetLectureCountTask extends AsyncTask<Void, Void, Integer> {
-
-            private LectureItem lectureItem;
-
-            GetLectureCountTask(LectureItem lectureItem) {
-                this.lectureItem = lectureItem;
-            }
-
-            @Override
-            protected Integer doInBackground(Void... params) {
-                String guid = lectureItem.getCourse().getGuid();
-                CourseLectureCountGetter countGetter =
-                        new CloudCourseLectureCountGetter();
-                return countGetter.get(guid);
-            }
-
-            @Override
-            protected void onPostExecute(Integer integer) {
-                super.onPostExecute(integer);
-                Toast.makeText(MainActivity.this,
-                        lectureItem.getOrder() + " of " + Integer.toString(integer),
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-
     }
 
 }
