@@ -4,11 +4,11 @@ import com.stas.tsepa.sandboxapp.LectureItem;
 
 import java.util.List;
 
-import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
+import rx.Observable;
 
-public interface LectoryiLecturesAPI {
+public interface ObservableLecturesAPI {
     @GET("lecture?token=E3yK8syiWdH6du&expand=courses")
-    Call<List<LectureItem>> loadItems(@Query("page") int page, @Query("per-page") int perPage);
+    Observable<List<LectureItem>> loadItems(@Query("page") int page, @Query("per-page") int perPage);
 }
