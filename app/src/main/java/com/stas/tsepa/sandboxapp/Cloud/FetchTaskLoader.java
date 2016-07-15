@@ -14,13 +14,16 @@ import com.stas.tsepa.sandboxapp.repository.Repository;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
+import rx.Subscription;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.LoaderCallbacks {
 
@@ -108,11 +111,22 @@ public class FetchTaskLoader extends AsyncTaskLoader implements LoaderManager.Lo
 
         final ObservableLecturesAPI lecturesAPI = retrofit.create(ObservableLecturesAPI.class);
 
-        Observable.from(new Integer[]{1, 2, 3})
-                .flatMap(new Func1<Integer, Observable<List<LectureItem>>>() {
+        int pageCount = 10;
+
+        Observable.interval(5, TimeUnit.SECONDS)
+                .skip(1)
+                .take(pageCount)
+                .takeUntil(new Func1<Long, Boolean>() {
                     @Override
-                    public Observable<List<LectureItem>> call(Integer integer) {
-                        return lecturesAPI.loadItems(integer, 2);
+                    public Boolean call(Long aLong) {
+                        return isAbandoned();
+                    }
+                })
+                .flatMap(new Func1<Long, Observable<List<LectureItem>>>() {
+                    @Override
+                    public Observable<List<LectureItem>> call(Long aLong) {
+
+                        return lecturesAPI.loadItems(aLong, 2);
                     }
                 })
                 .subscribe(new Action1<List<LectureItem>>() {
